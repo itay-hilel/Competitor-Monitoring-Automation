@@ -42,6 +42,7 @@ const schema = defineSchema({
       v.literal("both")
     )),
     webhookUrl: v.optional(v.string()),
+    webhookHeaders: v.optional(v.string()), // JSON stringified headers
     monitorType: v.optional(v.union(
       v.literal("single_page"),
       v.literal("full_site")
@@ -122,6 +123,7 @@ const schema = defineSchema({
   userSettings: defineTable({
     userId: v.id("users"),
     defaultWebhookUrl: v.optional(v.string()),
+    defaultWebhookHeaders: v.optional(v.string()), // JSON stringified headers
     emailNotificationsEnabled: v.boolean(),
     emailTemplate: v.optional(v.string()),
     // AI Analysis settings

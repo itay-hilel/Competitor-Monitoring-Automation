@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, Mail, Copy, Check, Network, FileText } from 'lucide-react'
+import { X, Mail, Copy, Check, Network, FileText, Plus, Trash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,7 @@ interface WebhookConfigModalProps {
   onSave: (config: {
     notificationPreference: 'none' | 'email' | 'webhook' | 'both'
     webhookUrl?: string
+    webhookHeaders?: Record<string, string>
     checkInterval?: number
     monitorType?: 'single_page' | 'full_site'
     crawlLimit?: number
@@ -22,6 +23,7 @@ interface WebhookConfigModalProps {
   initialConfig?: {
     notificationPreference: 'none' | 'email' | 'webhook' | 'both'
     webhookUrl?: string
+    webhookHeaders?: Record<string, string>
     checkInterval?: number
     monitorType?: 'single_page' | 'full_site'
     crawlLimit?: number
@@ -39,18 +41,35 @@ export function WebhookConfigModal({ isOpen, onClose, onSave, initialConfig, web
   const [crawlDepth, setCrawlDepth] = useState(String(initialConfig?.crawlDepth || 3))
   const [copied, setCopied] = useState(false)
   const [checkNow, setCheckNow] = useState(true) // Default to true for new websites
+  
+  // Headers state
+  const [headers, setHeaders] = useState<{key: string, value: string}[]>(() => {
+    if (initialConfig?.webhookHeaders) {
+      return Object.entries(initialConfig.webhookHeaders).map(([key, value]) => ({ key, value }))
+    }
+    return []
+  })
 
   const handleSave = useCallback(() => {
+    // Convert headers array back to object
+    const headersObject = headers.reduce((acc, { key, value }) => {
+      if (key.trim()) {
+        acc[key.trim()] = value
+      }
+      return acc
+    }, {} as Record<string, string>)
+
     onSave({
       notificationPreference: notificationPreference as 'none' | 'email' | 'webhook' | 'both',
       webhookUrl: (notificationPreference === 'webhook' || notificationPreference === 'both') ? webhookUrl : undefined,
+      webhookHeaders: Object.keys(headersObject).length > 0 ? headersObject : undefined,
       checkInterval: parseInt(checkInterval),
       monitorType: monitorType as 'single_page' | 'full_site',
       crawlLimit: monitorType === 'full_site' ? parseInt(crawlLimit) : undefined,
       crawlDepth: monitorType === 'full_site' ? parseInt(crawlDepth) : undefined,
       checkNow: checkNow
     })
-  }, [notificationPreference, webhookUrl, checkInterval, monitorType, crawlLimit, crawlDepth, checkNow, onSave])
+  }, [notificationPreference, webhookUrl, headers, checkInterval, monitorType, crawlLimit, crawlDepth, checkNow, onSave])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -68,6 +87,20 @@ export function WebhookConfigModal({ isOpen, onClose, onSave, initialConfig, web
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose, handleSave])
+
+  const addHeader = () => {
+    setHeaders([...headers, { key: '', value: '' }])
+  }
+
+  const removeHeader = (index: number) => {
+    setHeaders(headers.filter((_, i) => i !== index))
+  }
+
+  const updateHeader = (index: number, field: 'key' | 'value', value: string) => {
+    const newHeaders = [...headers]
+    newHeaders[index][field] = value
+    setHeaders(newHeaders)
+  }
 
   if (!isOpen) return null
 
@@ -296,6 +329,51 @@ export function WebhookConfigModal({ isOpen, onClose, onSave, initialConfig, web
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   We&apos;ll send a POST request to this URL when changes are detected
+                </p>
+              </div>
+
+              {/* Webhook Headers */}
+              <div>
+                <Label>Webhook Headers (Optional)</Label>
+                <div className="space-y-2 mt-2">
+                  {headers.map((header, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        placeholder="Key (e.g. Authorization)"
+                        value={header.key}
+                        onChange={(e) => updateHeader(index, 'key', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        placeholder="Value (e.g. Bearer token)"
+                        value={header.value}
+                        onChange={(e) => updateHeader(index, 'value', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeHeader(index)}
+                        className="flex-shrink-0"
+                      >
+                        <Trash className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addHeader}
+                    className="mt-2"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Header
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Add custom headers like Authorization for securing your webhook endpoint
                 </p>
               </div>
 

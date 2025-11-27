@@ -48,6 +48,7 @@ export const createWebsite = mutation({
       checkInterval: args.checkInterval,
       notificationPreference: args.notificationPreference || "none",
       webhookUrl,
+      webhookHeaders: args.webhookHeaders,
       monitorType: args.monitorType || "single_page",
       crawlLimit: args.crawlLimit,
       crawlDepth: args.crawlDepth,
@@ -155,6 +156,7 @@ export const updateWebsite = mutation({
       v.literal("both")
     )),
     webhookUrl: v.optional(v.string()),
+    webhookHeaders: v.optional(v.any()),
     checkInterval: v.optional(v.number()),
     monitorType: v.optional(v.union(
       v.literal("single_page"),
@@ -181,6 +183,10 @@ export const updateWebsite = mutation({
 
     if (args.webhookUrl !== undefined) {
       updates.webhookUrl = args.webhookUrl;
+    }
+
+    if (args.webhookHeaders !== undefined) {
+      updates.webhookHeaders = args.webhookHeaders;
     }
 
     if (args.checkInterval !== undefined) {
@@ -630,6 +636,7 @@ export const createWebsiteFromApi = internalMutation({
       checkInterval: args.checkInterval,
       notificationPreference: args.notificationPreference || "none",
       webhookUrl: args.webhookUrl,
+      webhookHeaders: args.webhookHeaders,
       monitorType: args.monitorType || "single_page",
       crawlLimit: args.crawlLimit,
       crawlDepth: args.crawlDepth,

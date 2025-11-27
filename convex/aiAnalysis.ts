@@ -202,6 +202,7 @@ export const handleAIBasedNotifications = internalAction({
       if (shouldSendWebhook && website.webhookUrl) {
         await ctx.scheduler.runAfter(0, internal.notifications.sendWebhookNotification, {
           webhookUrl: website.webhookUrl,
+          webhookHeaders: website.webhookHeaders, // Pass headers from website config
           websiteId: scrapeResult.websiteId,
           websiteName: website.name,
           websiteUrl: args.websiteUrl,

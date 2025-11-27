@@ -213,12 +213,19 @@ http.route({
       }
 
       // Make the webhook request from the HTTP action
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Firecrawl-Observer/1.0',
+      };
+
+      // Add custom headers if provided
+      if (body.headers) {
+        Object.assign(requestHeaders, body.headers);
+      }
+
       const response = await fetch(targetUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Firecrawl-Observer/1.0',
-        },
+        headers: requestHeaders,
         body: JSON.stringify(payload),
       });
 

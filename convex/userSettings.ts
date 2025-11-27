@@ -20,6 +20,7 @@ export const getUserSettings = query({
       // Return default settings if none exist
       return {
         defaultWebhookUrl: null,
+        defaultWebhookHeaders: null,
         emailNotificationsEnabled: true,
         emailTemplate: null,
         aiAnalysisEnabled: false,

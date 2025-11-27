@@ -142,6 +142,21 @@ export default function ApiDocsPage() {
     "websiteId": "k57m3..."
   }'`
 
+  const checkExample = `curl -X POST ${baseUrl}/api/check-website \\
+  -H "Authorization: Bearer ${apiKeyToShow}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "websiteId": "k57m3..."
+  }'`
+
+  const pauseExample = `curl -X POST ${baseUrl}/api/websites/pause \\
+  -H "Authorization: Bearer ${apiKeyToShow}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "websiteId": "k57m3...",
+    "paused": true
+  }'`
+
   const batchResponseExample = `{
   "success": true,
   "message": "Batch request processed. 3 websites added successfully.",

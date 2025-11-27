@@ -387,14 +387,14 @@ export default function HomePage() {
               <div className="text-center lg:text-left">
                 <h1 className="text-[3rem] lg:text-[4rem] font-semibold tracking-tight leading-none mb-6">
                   <span className="bg-gradient-to-tr from-red-600 to-yellow-500 bg-clip-text text-transparent block">
-                    Firecrawl
+                    Website
                   </span>
                   <span className="text-black block">
                     Observer
                   </span>
                 </h1>
                 <p className="text-xl text-zinc-600 dark:text-zinc-400">
-                  Monitor websites with Firecrawl change tracking
+                  Monitor websites for changes
                 </p>
               </div>
               
@@ -532,14 +532,14 @@ export default function HomePage() {
         title={
           <div className="flex flex-col leading-none">
             <span className="bg-gradient-to-tr from-red-600 to-yellow-500 bg-clip-text text-transparent">
-              Firecrawl
+              Website
             </span>
             <span className="text-black">
               Observer
             </span>
           </div>
         }
-        subtitle="Monitor websites with Firecrawl change tracking"
+        subtitle="Monitor websites for changes"
       />
       
       <MainContent maxWidth="7xl" className="py-12">

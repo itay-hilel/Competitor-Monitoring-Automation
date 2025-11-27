@@ -255,6 +255,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
+
 - [Report Issues](https://github.com/mendableai/firecrawl-observer/issues)
 - [Firecrawl Documentation](https://docs.firecrawl.dev)
 - [Convex Documentation](https://docs.convex.dev)

@@ -725,6 +725,62 @@ export const deleteWebsiteFromApi = internalMutation({
   },
 });
 
+// Update website from API
+export const updateWebsiteFromApi = internalMutation({
+  args: {
+    userId: v.id("users"),
+    websiteId: v.string(),
+    monitorType: v.optional(v.union(
+      v.literal("single_page"),
+      v.literal("full_site")
+    )),
+    checkInterval: v.optional(v.number()),
+    crawlLimit: v.optional(v.number()),
+    crawlDepth: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Find the website
+    const websiteId = args.websiteId as Id<"websites">;
+    const website = await ctx.db.get(websiteId);
+    
+    if (!website || website.userId !== args.userId) {
+      return false;
+    }
+
+    const updates: any = {
+      updatedAt: Date.now(),
+    };
+
+    if (args.monitorType !== undefined) {
+      updates.monitorType = args.monitorType;
+    }
+
+    if (args.checkInterval !== undefined) {
+      updates.checkInterval = args.checkInterval;
+    }
+
+    if (args.crawlLimit !== undefined) {
+      updates.crawlLimit = args.crawlLimit;
+    }
+
+    if (args.crawlDepth !== undefined) {
+      updates.crawlDepth = args.crawlDepth;
+    }
+
+    await ctx.db.patch(websiteId, updates);
+
+    // If changing to full site monitoring, trigger initial crawl
+    if (args.monitorType === "full_site" && website.monitorType !== "full_site") {
+      await ctx.scheduler.runAfter(0, internal.crawl.performCrawl, {
+        websiteId: websiteId,
+        userId: args.userId,
+      });
+    }
+
+    return true;
+  },
+});
+
 // Update scrape result with AI analysis
 export const updateScrapeResultAIAnalysis = internalMutation({
   args: {

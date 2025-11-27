@@ -196,6 +196,98 @@ http.route({
   }),
 });
 
+// API endpoint to check website manually
+http.route({
+  path: "/api/check-website",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    // Get the authorization header
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Validate API key and get user
+    const user = await ctx.runMutation(internal.apiKeys.validateApiKeyAndGetUser, { apiKey: token });
+    
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid API key" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    try {
+      const body = await request.json();
+      
+      if (!body.websiteId) {
+        return new Response(
+          JSON.stringify({ error: "Missing required field: websiteId" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify website ownership
+      const website = await ctx.runQuery(internal.websites.getWebsite, {
+        websiteId: body.websiteId,
+        userId: user._id,
+      });
+
+      if (!website) {
+        return new Response(
+          JSON.stringify({ error: "Website not found or access denied" }),
+          { status: 404, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Create immediate checking status entry
+      await ctx.runMutation(internal.websites.createCheckingStatus, {
+        websiteId: body.websiteId,
+        userId: user._id,
+      });
+
+      // Update lastChecked immediately
+      await ctx.runMutation(internal.websites.updateLastChecked, {
+        websiteId: body.websiteId,
+      });
+
+      // Trigger the appropriate check
+      if (website.monitorType === "full_site") {
+        await ctx.scheduler.runAfter(0, internal.crawl.performCrawl, {
+          websiteId: body.websiteId,
+          userId: user._id,
+        });
+      } else {
+        await ctx.scheduler.runAfter(0, internal.firecrawl.scrapeUrl, {
+          websiteId: body.websiteId,
+          url: website.url,
+          userId: user._id,
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Check initiated successfully",
+          websiteId: body.websiteId
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error: any) {
+      console.error("API error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error", details: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }),
+});
+
 // Webhook proxy endpoint
 http.route({
   path: "/api/webhook-proxy",
@@ -247,6 +339,86 @@ http.route({
       console.error("Webhook proxy error:", error);
       return new Response(
         JSON.stringify({ error: "Failed to proxy webhook", details: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }),
+});
+
+// API endpoint to update website configuration
+http.route({
+  path: "/api/update-website",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    // Get the authorization header
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Validate API key and get user
+    const user = await ctx.runMutation(internal.apiKeys.validateApiKeyAndGetUser, { apiKey: token });
+    
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid API key" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    try {
+      const body = await request.json();
+      
+      if (!body.websiteId) {
+        return new Response(
+          JSON.stringify({ error: "Missing required field: websiteId" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Map "type" to "monitorType" to match add endpoint
+      const monitorType = body.type === "crawl" ? "full_site" : (body.type === "scrape" ? "single_page" : undefined);
+
+      // Update the website
+      const result = await ctx.runMutation(internal.websites.updateWebsiteFromApi, {
+        userId: user._id,
+        websiteId: body.websiteId,
+        monitorType: monitorType,
+        checkInterval: body.checkInterval,
+        crawlLimit: body.crawlLimit,
+        crawlDepth: body.crawlDepth,
+      });
+
+      if (!result) {
+        return new Response(
+          JSON.stringify({ error: "Website not found or access denied" }),
+          { status: 404, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Website configuration updated successfully",
+          websiteId: body.websiteId,
+          updates: {
+            type: monitorType || null,
+            checkInterval: body.checkInterval || null,
+            crawlLimit: body.crawlLimit || null,
+            crawlDepth: body.crawlDepth || null,
+          }
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error: any) {
+      console.error("API error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error", details: error.message }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }

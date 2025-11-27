@@ -125,12 +125,14 @@ export default function ApiDocsPage() {
     }
   ]'`
   
-  const pauseExample = `curl -X POST ${baseUrl}/api/websites/pause \\
+  const updateExample = `curl -X PATCH ${baseUrl}/api/update-website \\
   -H "Authorization: Bearer ${apiKeyToShow}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "websiteId": "k57m3...",
-    "paused": true
+    "type": "crawl",
+    "checkInterval": 60,
+    "crawlLimit": 10
   }'`
   
   const deleteExample = `curl -X DELETE ${baseUrl}/api/websites/delete \\
@@ -624,6 +626,234 @@ export default function ApiDocsPage() {
                   </div>
                   <pre className="p-4 overflow-x-auto">
                     <code className="text-xs text-gray-700">{batchResponseExample}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Check Website Endpoint */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Check Website Endpoint</h2>
+            <p className="text-gray-600 mb-4">
+              Trigger an immediate check for a specific website. This bypasses the scheduled interval.
+            </p>
+            
+            <div className="bg-gray-900 text-gray-100 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <code className="text-sm">POST {baseUrl}/api/check-website</code>
+                <Button
+                  variant="code"
+                  size="sm"
+                  onClick={() => copyToClipboard(`POST ${baseUrl}/api/check-website`, 'check-endpoint')}
+                  className="text-xs"
+                >
+                  {copiedSection === 'check-endpoint' ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <h3 className="font-medium mb-2">Request Body</h3>
+            <table className="w-full mb-4">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2">Field</th>
+                  <th className="text-left py-2">Type</th>
+                  <th className="text-left py-2">Required</th>
+                  <th className="text-left py-2">Description</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                <tr className="border-b">
+                  <td className="py-2 font-mono">websiteId</td>
+                  <td className="py-2">string</td>
+                  <td className="py-2">Yes</td>
+                  <td className="py-2">The ID of the website to check</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="mb-6">
+              <h3 className="font-medium mb-2">Example</h3>
+              <div className="grid lg:grid-cols-2 gap-4">
+                {/* cURL Example */}
+                <div className="bg-gray-900 text-gray-100 rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between p-3 border-b border-gray-800">
+                    <span className="text-xs font-medium">Request</span>
+                    <Button
+                      variant="code"
+                      size="sm"
+                      onClick={() => copyToClipboard(checkExample, 'curl-check')}
+                      className="text-xs"
+                    >
+                      {copiedSection === 'curl-check' ? (
+                        <>
+                          <Check className="h-3 w-3 mr-1" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <pre className="p-4 overflow-x-auto">
+                    <code className="text-xs">{checkExample}</code>
+                  </pre>
+                </div>
+                
+                {/* Response Schema */}
+                <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                  <div className="p-3 border-b border-gray-200">
+                    <span className="text-xs font-medium text-gray-700">Response</span>
+                  </div>
+                  <pre className="p-4 overflow-x-auto">
+                    <code className="text-xs text-gray-700">{`{
+  "success": true,
+  "message": "Check initiated successfully",
+  "websiteId": "k57m3..."
+}`}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Update Configuration Endpoint */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Update Website Configuration Endpoint</h2>
+            <p className="text-gray-600 mb-4">
+              Update the configuration settings for a specific website. You can update one or more fields at a time.
+            </p>
+            
+            <div className="bg-gray-900 text-gray-100 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <code className="text-sm">PATCH {baseUrl}/api/update-website</code>
+                <Button
+                  variant="code"
+                  size="sm"
+                  onClick={() => copyToClipboard(`PATCH ${baseUrl}/api/update-website`, 'update-endpoint')}
+                  className="text-xs"
+                >
+                  {copiedSection === 'update-endpoint' ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <h3 className="font-medium mb-2">Request Body</h3>
+            <table className="w-full mb-4">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2">Field</th>
+                  <th className="text-left py-2">Type</th>
+                  <th className="text-left py-2">Required</th>
+                  <th className="text-left py-2">Description</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                <tr className="border-b">
+                  <td className="py-2 font-mono">websiteId</td>
+                  <td className="py-2">string</td>
+                  <td className="py-2">Yes</td>
+                  <td className="py-2">The ID of the website to update</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 font-mono">type</td>
+                  <td className="py-2">string</td>
+                  <td className="py-2">No</td>
+                  <td className="py-2">&quot;scrape&quot; or &quot;crawl&quot;</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 font-mono">checkInterval</td>
+                  <td className="py-2">number</td>
+                  <td className="py-2">No</td>
+                  <td className="py-2">Check interval in minutes</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 font-mono">crawlLimit</td>
+                  <td className="py-2">number</td>
+                  <td className="py-2">No</td>
+                  <td className="py-2">Max pages to crawl (only for type: &quot;crawl&quot;)</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 font-mono">crawlDepth</td>
+                  <td className="py-2">number</td>
+                  <td className="py-2">No</td>
+                  <td className="py-2">Max crawl depth (only for type: &quot;crawl&quot;)</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="mb-6">
+              <h3 className="font-medium mb-2">Example</h3>
+              <div className="grid lg:grid-cols-2 gap-4">
+                {/* cURL Example */}
+                <div className="bg-gray-900 text-gray-100 rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between p-3 border-b border-gray-800">
+                    <span className="text-xs font-medium">Request</span>
+                    <Button
+                      variant="code"
+                      size="sm"
+                      onClick={() => copyToClipboard(updateExample, 'curl-update')}
+                      className="text-xs"
+                    >
+                      {copiedSection === 'curl-update' ? (
+                        <>
+                          <Check className="h-3 w-3 mr-1" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <pre className="p-4 overflow-x-auto">
+                    <code className="text-xs">{updateExample}</code>
+                  </pre>
+                </div>
+                
+                {/* Response Schema */}
+                <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                  <div className="p-3 border-b border-gray-200">
+                    <span className="text-xs font-medium text-gray-700">Response</span>
+                  </div>
+                  <pre className="p-4 overflow-x-auto">
+                    <code className="text-xs text-gray-700">{`{
+  "success": true,
+  "message": "Website configuration updated successfully",
+  "websiteId": "k57m3...",
+  "updates": {
+    "type": "full_site",
+    "checkInterval": 60,
+    "crawlLimit": 10,
+    "crawlDepth": null
+  }
+}`}</code>
                   </pre>
                 </div>
               </div>

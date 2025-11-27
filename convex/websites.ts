@@ -17,6 +17,7 @@ export const createWebsite = mutation({
       v.literal("both")
     )),
     webhookUrl: v.optional(v.string()),
+    webhookHeaders: v.optional(v.any()), // Changed to any to match API usage
     monitorType: v.optional(v.union(
       v.literal("single_page"),
       v.literal("full_site")
@@ -620,6 +621,7 @@ export const createWebsiteFromApi = internalMutation({
       v.literal("both")
     )),
     webhookUrl: v.optional(v.string()),
+    webhookHeaders: v.optional(v.any()), // Added missing field
     monitorType: v.optional(v.union(
       v.literal("single_page"),
       v.literal("full_site")

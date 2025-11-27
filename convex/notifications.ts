@@ -7,6 +7,7 @@ import { sanitizeHtml } from "./lib/sanitize";
 export const sendWebhookNotification = internalAction({
   args: {
     webhookUrl: v.string(),
+    webhookHeaders: v.optional(v.any()),
     websiteId: v.id("websites"),
     websiteName: v.string(),
     websiteUrl: v.string(),

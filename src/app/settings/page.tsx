@@ -49,6 +49,7 @@ function SettingsContent() {
   // Notification settings state
   const [notificationEmail, setNotificationEmail] = useState('')
   const [defaultWebhook, setDefaultWebhook] = useState('')
+  const [defaultWebhookHeaders, setDefaultWebhookHeaders] = useState<{key: string, value: string}[]>([])
   const [emailTemplate, setEmailTemplate] = useState('')
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
   const [isUpdatingWebhook, setIsUpdatingWebhook] = useState(false)
@@ -145,6 +146,14 @@ function SettingsContent() {
     if (userSettings?.defaultWebhookUrl) {
       setDefaultWebhook(userSettings.defaultWebhookUrl)
     }
+    if (userSettings?.defaultWebhookHeaders) {
+      try {
+        const headers = JSON.parse(userSettings.defaultWebhookHeaders)
+        setDefaultWebhookHeaders(Object.entries(headers).map(([key, value]) => ({ key, value: value as string })))
+      } catch (e) {
+        console.error('Failed to parse default webhook headers', e)
+      }
+    }
     if (userSettings?.emailTemplate) {
       setEmailTemplate(userSettings.emailTemplate)
     } else if (userSettings !== undefined) {
@@ -209,6 +218,20 @@ Analyze the provided diff and return a JSON response with:
       setNotificationEmail(emailConfig.email)
     }
   }, [emailConfig])
+  
+  const addHeader = () => {
+    setDefaultWebhookHeaders([...defaultWebhookHeaders, { key: '', value: '' }])
+  }
+
+  const removeHeader = (index: number) => {
+    setDefaultWebhookHeaders(defaultWebhookHeaders.filter((_, i) => i !== index))
+  }
+
+  const updateHeader = (index: number, field: 'key' | 'value', value: string) => {
+    const newHeaders = [...defaultWebhookHeaders]
+    newHeaders[index][field] = value
+    setDefaultWebhookHeaders(newHeaders)
+  }
   
   // Show loading while auth is loading
   if (authLoading) {
@@ -727,7 +750,7 @@ Analyze the provided diff and return a JSON response with:
                   <div className="space-y-8">
                     {/* Default Webhook Configuration */}
                     <div>
-                      <h3 className="text-lg font-medium mb-4">Default Webhook URL</h3>
+                      <h3 className="text-lg font-medium mb-4">Default Webhook Configuration</h3>
                       
                       <div className="space-y-4">
                         <div>
@@ -741,37 +764,94 @@ Analyze the provided diff and return a JSON response with:
                               onChange={(e) => setDefaultWebhook(e.target.value)}
                               className="flex-1"
                             />
-                            <Button 
-                              variant="orange" 
-                              size="sm"
-                              disabled={isUpdatingWebhook || defaultWebhook === (userSettings?.defaultWebhookUrl || '')}
-                              onClick={async () => {
-                                setIsUpdatingWebhook(true)
-                                try {
-                                  await updateDefaultWebhook({ 
-                                    webhookUrl: defaultWebhook || undefined 
-                                  })
-                                  setWebhookSuccess(true)
-                                  setTimeout(() => setWebhookSuccess(false), 3000)
-                                } catch (error) {
-                                  console.error('Failed to update webhook:', error)
-                                } finally {
-                                  setIsUpdatingWebhook(false)
-                                }
-                              }}
-                            >
-                              {isUpdatingWebhook ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : webhookSuccess ? (
-                                <CheckCircle className="h-4 w-4" />
-                              ) : (
-                                'Save'
-                              )}
-                            </Button>
                           </div>
                           <p className="text-sm text-gray-500 mt-1">
                             This webhook will be used as default for new monitors if not specified
                           </p>
+                        </div>
+
+                        {/* Default Webhook Headers */}
+                        <div>
+                          <Label>Default Webhook Headers (Optional)</Label>
+                          <div className="space-y-2 mt-2">
+                            {defaultWebhookHeaders.map((header, index) => (
+                              <div key={index} className="flex gap-2">
+                                <Input
+                                  placeholder="Key (e.g. Authorization)"
+                                  value={header.key}
+                                  onChange={(e) => updateHeader(index, 'key', e.target.value)}
+                                  className="flex-1"
+                                />
+                                <Input
+                                  placeholder="Value (e.g. Bearer token)"
+                                  value={header.value}
+                                  onChange={(e) => updateHeader(index, 'value', e.target.value)}
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => removeHeader(index)}
+                                  className="flex-shrink-0"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={addHeader}
+                              className="mt-2"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Header
+                            </Button>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Default headers to include in webhook requests (e.g. for authentication)
+                          </p>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button 
+                            variant="orange" 
+                            size="sm"
+                            disabled={isUpdatingWebhook}
+                            onClick={async () => {
+                              setIsUpdatingWebhook(true)
+                              try {
+                                // Convert headers array back to object
+                                const headersObject = defaultWebhookHeaders.reduce((acc, { key, value }) => {
+                                  if (key.trim()) {
+                                    acc[key.trim()] = value
+                                  }
+                                  return acc
+                                }, {} as Record<string, string>)
+
+                                await updateDefaultWebhook({ 
+                                  webhookUrl: defaultWebhook || undefined,
+                                  webhookHeaders: Object.keys(headersObject).length > 0 ? JSON.stringify(headersObject) : undefined
+                                })
+                                setWebhookSuccess(true)
+                                setTimeout(() => setWebhookSuccess(false), 3000)
+                              } catch (error) {
+                                console.error('Failed to update webhook:', error)
+                              } finally {
+                                setIsUpdatingWebhook(false)
+                              }
+                            }}
+                          >
+                            {isUpdatingWebhook ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : webhookSuccess ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              'Save Defaults'
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </div>

@@ -59,6 +59,7 @@ export const getUserSettings = query({
 export const updateDefaultWebhook = mutation({
   args: {
     webhookUrl: v.optional(v.string()),
+    webhookHeaders: v.optional(v.string()), // JSON stringified headers
   },
   handler: async (ctx, args) => {
     const user = await requireCurrentUser(ctx);
@@ -79,15 +80,22 @@ export const updateDefaultWebhook = mutation({
 
     const now = Date.now();
 
+    const updateData: any = {
+      defaultWebhookUrl: args.webhookUrl || undefined,
+      updatedAt: now,
+    };
+
+    if (args.webhookHeaders !== undefined) {
+      updateData.defaultWebhookHeaders = args.webhookHeaders;
+    }
+
     if (existingSettings) {
-      await ctx.db.patch(existingSettings._id, {
-        defaultWebhookUrl: args.webhookUrl || undefined,
-        updatedAt: now,
-      });
+      await ctx.db.patch(existingSettings._id, updateData);
     } else {
       await ctx.db.insert("userSettings", {
         userId: user._id,
         defaultWebhookUrl: args.webhookUrl || undefined,
+        defaultWebhookHeaders: args.webhookHeaders,
         emailNotificationsEnabled: true,
         createdAt: now,
         updatedAt: now,

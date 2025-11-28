@@ -72,7 +72,7 @@ http.route({
             // Set defaults
             const monitorType = website.type === "crawl" ? "full_site" : "single_page";
             const checkInterval = website.checkInterval || 60;
-            const notificationPreference = website.webhook ? "webhook" : "none";
+            const notificationPreference = "webhook";
             const crawlLimit = website.crawlLimit || 5;
             const crawlDepth = website.crawlDepth || 3;
             const name = website.name || hostname.charAt(0).toUpperCase() + hostname.slice(1);
@@ -150,7 +150,7 @@ http.route({
         // Set defaults
         const monitorType = body.type === "crawl" ? "full_site" : "single_page";
         const checkInterval = body.checkInterval || 60;
-        const notificationPreference = body.webhook ? "webhook" : "none";
+        const notificationPreference = "webhook";
         const crawlLimit = body.crawlLimit || 5;
         const crawlDepth = body.crawlDepth || 3;
         const name = body.name || hostname.charAt(0).toUpperCase() + hostname.slice(1);

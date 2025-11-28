@@ -632,6 +632,21 @@ export const createWebsiteFromApi = internalMutation({
     crawlDepth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    // Get user settings for default webhook
+    let webhookUrl = args.webhookUrl;
+    
+    // If no webhook provided, try to use default
+    if (!webhookUrl) {
+      const userSettings = await ctx.db
+        .query("userSettings")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+      
+      if (userSettings?.defaultWebhookUrl) {
+        webhookUrl = userSettings.defaultWebhookUrl;
+      }
+    }
+
     const websiteId = await ctx.db.insert("websites", {
       url: args.url,
       name: args.name,
@@ -639,7 +654,7 @@ export const createWebsiteFromApi = internalMutation({
       isActive: true,
       checkInterval: args.checkInterval,
       notificationPreference: args.notificationPreference || "none",
-      webhookUrl: args.webhookUrl,
+      webhookUrl,
       webhookHeaders: args.webhookHeaders,
       monitorType: args.monitorType || "single_page",
       crawlLimit: args.crawlLimit,

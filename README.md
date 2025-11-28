@@ -16,9 +16,7 @@ A powerful website monitoring application that tracks changes on websites and se
 - Node.js 18+ and npm
 - A [Convex](https://convex.dev) account (free tier available)
 - A [Firecrawl](https://firecrawl.dev) API key (required for website monitoring)
-- (Optional) [Resend](https://resend.com) API key for email notifications
-- (Optional) AI API key for intelligent filtering ([OpenAI](https://platform.openai.com), [Anthropic](https://console.anthropic.com), [Google](https://aistudio.google.com), or [Moonshot](https://platform.moonshot.cn))
-
+  
 ## Quick Start
 
 ### Step 1: Clone the Repository

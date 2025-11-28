@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Layout, MainContent, Footer } from '@/components/layout/layout'
 import { Header } from '@/components/layout/header'
-import { Hero } from '@/components/layout/hero'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Clock, ExternalLink, LogIn, Download, X, Play, Pause, Globe, RefreshCw, Settings2, Search, ChevronLeft, ChevronRight, Maximize2, Minimize2, Bot, Eye } from 'lucide-react'
@@ -527,20 +526,6 @@ export default function HomePage() {
       
       {/* Show banner if no Firecrawl API key is set */}
       {!firecrawlKey?.hasKey && <FirecrawlKeyBanner />}
-      
-      <Hero 
-        title={
-          <div className="flex flex-col leading-none">
-            <span className="bg-gradient-to-tr from-red-600 to-yellow-500 bg-clip-text text-transparent">
-              Website
-            </span>
-            <span className="text-black">
-              Observer
-            </span>
-          </div>
-        }
-        subtitle="Monitor websites for changes"
-      />
       
       <MainContent maxWidth="7xl" className="py-12">
         <div className="space-y-6">

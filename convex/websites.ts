@@ -30,7 +30,9 @@ export const createWebsite = mutation({
     
     // Get user settings for default webhook
     let webhookUrl = args.webhookUrl;
-    if (!webhookUrl && args.notificationPreference && ['webhook', 'both'].includes(args.notificationPreference)) {
+    
+    // If no webhook provided, try to use default
+    if (!webhookUrl) {
       const userSettings = await ctx.db
         .query("userSettings")
         .withIndex("by_user", (q) => q.eq("userId", user._id))

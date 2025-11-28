@@ -2,7 +2,6 @@
 
 import { Layout, MainContent, Footer } from '@/components/layout/layout'
 import { Header } from '@/components/layout/header'
-import { Hero } from '@/components/layout/hero'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,16 +29,16 @@ export default function DocsPage() {
     <Layout>
       <Header showCTA={false} />
       
-      <Hero 
-        title="Documentation"
-        subtitle="Complete guide to monitoring websites with Firecrawl Observer"
-      />
-      
       <MainContent maxWidth="7xl" className="py-12">
         <div className="max-w-6xl mx-auto space-y-12">
           
           {/* Overview */}
           <section>
+            <h1 className="text-4xl font-bold mb-2">Documentation</h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Complete guide to monitoring websites with Firecrawl Observer
+            </p>
+            
             <h2 className="text-2xl font-bold mb-6">Overview</h2>
             <div className="prose prose-gray max-w-none">
               <p className="text-lg text-gray-600 mb-6">

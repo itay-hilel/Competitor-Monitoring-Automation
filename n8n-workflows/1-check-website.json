@@ -1,0 +1,72 @@
+{
+  "name": "Firecrawl: On-Demand Check",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-website",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "scrape",
+        "url": "={{$json.body.url}}",
+        "options": {
+          "formats": [
+            "markdown"
+          ]
+        }
+      },
+      "name": "Firecrawl Scrape",
+      "type": "n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [300, 300],
+      "credentials": {
+        "firecrawlApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Firecrawl API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"data\": {{$json}}\n}",
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Firecrawl Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Scrape": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "name": "Firecrawl: Scheduler (With Change Detection)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "sheetId": "YOUR_GOOGLE_SHEET_ID",
+        "range": "A:F",
+        "options": {}
+      },
+      "name": "Get Active Websites",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "operation": "scrape",
+        "url": "={{$json.url}}",
+        "options": {
+          "formats": [
+            "markdown",
+            "changeTracking"
+          ],
+          "changeTrackingOptions": {
+            "modes": [
+              "git-diff"
+            ]
+          }
+        }
+      },
+      "name": "Firecrawl Scrape",
+      "type": "n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "credentials": {
+        "firecrawlApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Firecrawl API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.changeTracking.changeStatus}}",
+              "value2": "changed"
+            }
+          ]
+        }
+      },
+      "name": "If Changed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$node[\"Split In Batches\"].json.webhookUrl}}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event",
+              "value": "website_changed"
+            },
+            {
+              "name": "website",
+              "value": "={{$node[\"Split In Batches\"].json.url}}"
+            },
+            {
+              "name": "change_summary",
+              "value": "={{$json.changeTracking.diff.text}}"
+            },
+            {
+              "name": "full_content",
+              "value": "={{$json.markdown}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Notify Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1100, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Active Websites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Websites": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Firecrawl Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Scrape": {
+      "main": [
+        [
+          {
+            "node": "If Changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Changed": {
+      "main": [
+        [
+          {
+            "node": "Notify Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Webhook": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
